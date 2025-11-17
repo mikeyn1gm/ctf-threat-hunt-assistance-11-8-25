@@ -285,7 +285,7 @@ Confirming egress is a necessary precondition before any attempt to move data of
 Provide the File Name of the initiating parent process
 
 **Actions and Thought Process:**
-The details stated “session,” so I figured something like nslookup or a quick interface query was involved. I filtered DeviceProcessEvents by the host and narrowed the time window to when the earlier flags took place. Then I searched for commands containing things like "ping", "nslookup", "Test-NetConnection", or "curl" to catch any basic network validation. Only two events showed up—both making a bogus nslookup call. I checked the initiating parent process and saw that the suspicious lookup ultimately came from `RuntimeBroker.exe`, which stood out immediately since that’s not normal for nslookup activity.
+The details stated “session,” so I figured something like nslookup or a quick interface query was involved. I filtered DeviceProcessEvents by the host and narrowed the time window to when the earlier flags took place. Then I searched for commands containing things like "ping", "nslookup", "Test-NetConnection", or "curl" to catch any basic network validation. Only two events showed up with both of them making a bogus nslookup call. I checked the initiating parent process and saw that the suspicious lookup ultimately came from `RuntimeBroker.exe`, which stood out immediately since that’s not normal for nslookup activity.
 
 **Query used to locate events:**
 
@@ -324,20 +324,20 @@ Knowing which sessions are active helps an actor decide whether to act immediate
 What is the unique ID of the initiating process
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+I knew this portion of the investigation was about finding any recon attempts that checked for active user sessions, so I focused on commands like qwinsta, quser, or query user. I filtered DeviceProcessEvents for anything containing those keywords within the same tight time window as the previous findings. Once the results showed up, I just looked for the event that matched the recon behavior and checked the InitiatingProcessUniqueId column. The earliest one tied to the suspicious activity stood out immediately, so I grabbed that value.
 
 **Query used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+DeviceProcessEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
-| project TimeGenerated, FileName, ProcessCommandLine
+| where TimeGenerated between (datetime(2025-10-09T12:50:00Z) .. datetime(2025-10-09T12:55:00Z))  
+| where ProcessCommandLine has_any ("qwinsta", "query user", "quser")
+| project TimeGenerated, FileName, ProcessCommandLine, InitiatingProcessFileName, InitiatingProcessUniqueId
 | order by TimeGenerated asc 
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1633" height="407" alt="image" src="https://github.com/user-attachments/assets/76bcf2f7-5c9a-464a-b46c-8b2feaf54626" />
 
 **Answer:**
 `2533274790397065`
@@ -370,20 +370,20 @@ A process inventory shows what’s present and what to avoid or target for colle
 Provide the file name of the process that best demonstrates a runtime process enumeration event on the target host.
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+I figured the hint was pointing straight at something like tasklist, so I narrowed my search in DeviceProcessEvents to anything with "task" in the command line. I continue to keep the same time window as the previous findings to stay consistent with the attacker’s activity timeline. Once the results popped up, `tasklist.exe` stood out immediately as the clearest example of a full process-enumeration event. It matched the suspected details perfectly and was tied to suspicious parent processes, so that confirmed it was the right one.
 
 **Query used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+DeviceProcessEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
-| project TimeGenerated, FileName, ProcessCommandLine
+| where TimeGenerated between (datetime(2025-10-09T12:50:00Z) .. datetime(2025-10-09T12:55:00Z))  
+| where ProcessCommandLine contains "task"
+| project TimeGenerated, ProcessCommandLine, FileName, InitiatingProcessCommandLine, InitiatingProcessFileName, InitiatingProcessParentFileName
 | order by TimeGenerated asc 
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1477" height="376" alt="image" src="https://github.com/user-attachments/assets/724ed8f1-a08c-462c-b94b-790437b821f8" />
 
 **Answer:**
 `tasklist.exe`
