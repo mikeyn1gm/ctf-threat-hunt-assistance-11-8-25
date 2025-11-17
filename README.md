@@ -412,7 +412,7 @@ Privilege mapping informs whether the actor proceeds as a user or seeks elevatio
 Identify the timestamp of the very first attempt
 
 **Actions and Thought Process:**
-To figure out when the privilege-checking started, I focused on anything that used the keyword "who", since the details seem point me in that direction. I filtered DeviceProcessEvents for commands like whoami and grouped the results by earliest timestamp. Once I sorted everything ascending, the very first event that showed up was a cmd.exe call running `whoami /groups` on 10/9/25 at 12:52:14PM, which made it clear this was the attacker’s initial privilege probe. I right clicked the date and time for this result and clicked on "Copy value" so I can copy the desired format for submission which was `2025-10-09T12:52:14.3135459Z`.
+To figure out when the privilege-checking started, I focused on anything that used the keyword "who", since the details seemed to point me in that direction. I filtered DeviceProcessEvents for commands like whoami and grouped the results by earliest timestamp. Once I sorted everything ascending, the very first event that showed up was a cmd.exe call running `whoami /groups` on 10/9/25 at 12:52:14PM, which made it clear this was the attacker’s initial privilege probe. I right clicked the date and time for this result and clicked on "Copy value" so I can copy the desired format for submission which was `2025-10-09T12:52:14.3135459Z`.
 
 **Query used to locate events:**
 
