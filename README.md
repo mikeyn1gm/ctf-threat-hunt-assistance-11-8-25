@@ -76,7 +76,7 @@ Pinpointing the first unusual execution helps you anchor the timeline and follow
 What was the first CLI parameter name used during the execution of the suspicious program?
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between 10/1/25 to 10/15/25 under the device name of "gab-intern-vm" (I will be using this device name and time range frequently for KQL queries going forward to maintain a precise and isolated view to the events that took place). With the information I have so far, I narrowed down further to potential inclusions of the "Downloads" folder in the command execution to investigate. I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+I searched within DeviceProcessEvents for any suspicious commands that were ran between 10/1/25 to 10/15/25 under the device name of "gab-intern-vm" (I will be using this device name frequently for KQL queries going forward along with this time range or a tighter one to maintain a focused view to the events that took place). With the information I have so far, I narrowed down further to potential inclusions of the "Downloads" folder in the command execution to investigate. I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
 
 **Note:** The "tolower" line in the query below makes a case-insensitive search for a provided string. This is to capture all results regardless on whether a "Downloads" folder was named "Downloads", "downloads", "DOWNLOADS" and etc...
 
@@ -118,20 +118,19 @@ A planted or staged tamper indicator is a signal of intent — treat it as inten
 What was the name of the file related to this exploit?
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between 10/1/25 to 10/15/25 under the device name of "gab-intern-vm" (I will be using this device name and time range frequently for KQL queries going forward to maintain a focused view to the events that took place). I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+With this information, I initially thought about searching within DeviceFileEvents but opted for checking DeviceProcessEvents for any executions involving any files with "tamper" in the filename. I also decided to tighten up the time range down to 10/9 to 10/15 since the previous event occurred on 10/9 at 12:22PM. I found `DefenderTamperArtifact.lnk` immediately.
 
 **Query used to locate events:**
 
 ```kql
 DeviceProcessEvents  
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
-| project TimeGenerated, FileName, ProcessCommandLine
-| order by TimeGenerated asc 
+| where TimeGenerated between (datetime(2025-10-09T12:22:27Z) .. datetime(2025-10-15T00:00:00Z))  
+| where FileName contains "tamper"
+| order by TimeGenerated desc 
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1616" height="395" alt="image" src="https://github.com/user-attachments/assets/71a63541-84cb-4e0e-b54f-d5ed2a04c42c" />
 
 **Answer:**
 `DefenderTamperArtifact.lnk`
