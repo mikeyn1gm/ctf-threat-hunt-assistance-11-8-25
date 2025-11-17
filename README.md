@@ -202,7 +202,7 @@ Context-gathering shapes attacker decisions — who, what, and where to target n
 Point out when the last recon attempt was
 
 **Actions and Thought Process:**
-I searched DeviceProcessEvents for anything in the command line containing “qwi” during the main activity window. I sorted the results by time so I could see when the recon actually happened. The last execution of `qwinsta.exe` stood out immediately, giving me the timestamp of the final recon attempt which occurred on 10/9/15 at 12:51PM. I right clicked the date and time for this result and clicked on "Copy value" so I can copy the desired format for submission which was `2025-10-09T12:51:44.3425653Z`
+I searched DeviceProcessEvents for anything in the command line containing “qwi” during the main activity window. I sorted the results by time so I could see when the recon actually happened. The last execution of `qwinsta.exe` stood out immediately, giving me the timestamp of the final recon attempt which occurred on 10/9/15 at 12:51PM. I right clicked the date and time for this result and clicked on "Copy value" so I can copy the desired format for submission which was `2025-10-09T12:51:44.3425653Z`.
 
 **Query used to locate events:**
 
@@ -243,20 +243,20 @@ Mapping where data lives is a preparatory step for collection and staging.
 What was the first CLI parameter name used during the execution of the suspicious program?
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+For this one I focused on any commands that looked like the attacker was checking storage or shares. With the mention of “storage assessment” in the information provided, I filtered DeviceProcessEvents for things like net view, net use, Get-PSDrive, and wmic logicaldisk, then tightened the time window to the activity on 10/9. Two commands popped up back-to-back, but the earliest one performing actual storage enumeration was the wmic call. It seems to show the attacker pulling disk names, free space, and size, which lines up perfectly with a storage-mapping step. This gave me the first CLI parameter used which was `"cmd.exe" /c wmic logicaldisk get name,freespace,size`.
 
 **Query used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+DeviceProcessEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
-| project TimeGenerated, FileName, ProcessCommandLine
-| order by TimeGenerated asc 
+| where TimeGenerated between (datetime(2025-10-09T12:40:00Z) .. datetime(2025-10-09T13:00:00Z))  
+| where ProcessCommandLine has_any ("net view","net use","Get-PSDrive","wmic logicaldisk","Get-SmbShare","dir \\\\")
+| project TimeGenerated, ProcessCommandLine
+| order by TimeGenerated asc
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1616" height="391" alt="image" src="https://github.com/user-attachments/assets/99342cac-e772-41d2-9c2d-e961800131e2" />
 
 **Answer:**
 `"cmd.exe" /c wmic logicaldisk get name,freespace,size`
