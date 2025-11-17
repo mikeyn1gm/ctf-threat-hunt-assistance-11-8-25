@@ -118,7 +118,7 @@ A planted or staged tamper indicator is a signal of intent — treat it as inten
 What was the name of the file related to this exploit?
 
 **Actions and Thought Process:**
-With this information, I initially thought about searching within DeviceFileEvents but opted for checking DeviceProcessEvents for any executions involving any files with "tamper" in the filename. I also decided to tighten up the time range down to 10/9 to 10/15 since the previous event occurred on 10/9 at 12:22PM. I found `DefenderTamperArtifact.lnk` immediately.
+With this information, I initially thought about searching within DeviceFileEvents but opted for checking DeviceProcessEvents for any executions involving any files with "tamper" in the filename. I also decided to tighten up the time range down to 10/9 to 10/15 since the previous event occurred on 10/9 at 12:22PM. I found `DefenderTamperArtifact.lnk` immediately as a file involved with an execution from the suspected device.
 
 **Query used to locate events:**
 
