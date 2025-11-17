@@ -161,20 +161,20 @@ Attackers look for low-effort wins first; these quick probes often precede broad
 Provide the command value tied to this particular exploit
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+With the information provided, I figured this was probably related to clipboard access. I searched DeviceProcessEvents and filtered for commands that included “clip,” “Get-Clipboard,” or anything similar. That quickly surfaced a single PowerShell one-liner trying to read the clipboard. It stood out because it was a quick, low-effort probe that didn’t match normal activity.
 
 **Query used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+DeviceProcessEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
+| where TimeGenerated between (datetime(2025-10-09T12:22:27Z) .. datetime(2025-10-15T00:00:00Z))  
+| where ProcessCommandLine has_any ("clip", "Get-Clipboard", "clipboard")
 | project TimeGenerated, FileName, ProcessCommandLine
 | order by TimeGenerated asc 
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1632" height="406" alt="image" src="https://github.com/user-attachments/assets/a1d835f9-e684-48cc-82a3-d976064f84bc" />
 
 **Answer:**
 `"powershell.exe" -NoProfile -Sta -Command "try { Get-Clipboard | Out-Null } catch { }"`
@@ -202,20 +202,20 @@ Context-gathering shapes attacker decisions — who, what, and where to target n
 Point out when the last recon attempt was
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+I searched DeviceProcessEvents for anything in the command line containing “qwi” during the main activity window. I sorted the results by time so I could see when the recon actually happened. The last execution of `qwinsta.exe` stood out immediately, giving me the timestamp of the final recon attempt which occurred on 10/9/15 at 12:51PM. I right clicked the date and time for this result and clicked on "Copy value" so I can copy the desired format for submission which was `2025-10-09T12:51:44.3425653Z`
 
 **Query used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+DeviceProcessEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
+| where TimeGenerated between (datetime(2025-10-09T12:22:27Z) .. datetime(2025-10-15T00:00:00Z))  
+| where ProcessCommandLine contains "qwi"
 | project TimeGenerated, FileName, ProcessCommandLine
 | order by TimeGenerated asc 
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1632" height="402" alt="image" src="https://github.com/user-attachments/assets/7befc4c8-c70e-4806-ac63-d8d5122a8854" />
 
 **Answer:**
 `2025-10-09T12:51:44.3425653Z`
