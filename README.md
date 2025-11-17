@@ -37,7 +37,7 @@ Before you officially begin the flags, you must first determine where to start h
 Identify the most suspicious machine based on the given conditions
 
 **My Actions and Thought Process:**
-Based on the initial information I have, I searched within DeviceFileEvents between the time range of October 1st to October 15th for any devices with any activity relegated to "helpdesk" naming in terms of files with such a filename or directory locations that could have the name as well. I remembered the details from intel that this target device might be under the ownership of an intern end user. With this in mind, I had no doubt when I quickly narrowed down my search to a device with name `"gab-intern-vm"`.
+Based on the initial information I have, I searched within DeviceFileEvents between the time range of October 1st to October 15th for any devices with any activity relegated to "helpdesk" naming in terms of files with such a filename or directory locations that could have the name as well. I remembered the details from intel that this target device might be under the ownership of an intern end user. With this in mind, I had no doubt when I quickly narrowed down my search to a device with the name `"gab-intern-vm"`.
 
 **Query used to locate events:**
 
