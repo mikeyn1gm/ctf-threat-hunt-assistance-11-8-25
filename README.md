@@ -78,7 +78,7 @@ What was the first CLI parameter name used during the execution of the suspiciou
 **Actions and Thought Process:**
 I searched within DeviceProcessEvents for any suspicious commands that were ran between 10/1/25 to 10/15/25 under the device name of "gab-intern-vm" (I will be using this device name frequently for KQL queries going forward along with this time range or a tighter one to maintain a focused view to the events that took place). With the information I have so far, I narrowed down further to potential inclusions of the "Downloads" folder in the command execution to investigate. I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
 
-**Note:** The "tolower" line in the query below makes a case-insensitive search for a provided string. This is to capture all results regardless on whether a "Downloads" folder was named "Downloads", "downloads", "DOWNLOADS" and etc...
+**Note:** The "tolower" line in the query below makes a case-insensitive search for a provided string by making all results lowercase. This is to capture all results regardless on whether a "Downloads" folder was named "Downloads", "downloads", "DOWNLOADS" and etc...
 
 **Query used to locate events:**
 
