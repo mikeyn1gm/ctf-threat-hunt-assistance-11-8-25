@@ -285,20 +285,20 @@ Confirming egress is a necessary precondition before any attempt to move data of
 Provide the File Name of the initiating parent process
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+The details stated “session,” so I figured something like nslookup or a quick interface query was involved. I filtered DeviceProcessEvents by the host and narrowed the time window to when the earlier flags took place. Then I searched for commands containing things like "ping", "nslookup", "Test-NetConnection", or "curl" to catch any basic network validation. Only two events showed up—both making a bogus nslookup call. I checked the initiating parent process and saw that the suspicious lookup ultimately came from `RuntimeBroker.exe`, which stood out immediately since that’s not normal for nslookup activity.
 
 **Query used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+DeviceProcessEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
-| project TimeGenerated, FileName, ProcessCommandLine
+| where TimeGenerated between (datetime(2025-10-09T12:51:00Z) .. datetime(2025-10-09T12:55:00Z))  
+| where ProcessCommandLine has_any ("ping","nslookup","Test-NetConnection","curl")
+| project TimeGenerated, ProcessCommandLine, InitiatingProcessFileName, InitiatingProcessParentFileName
 | order by TimeGenerated asc 
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1473" height="375" alt="image" src="https://github.com/user-attachments/assets/69c238d6-ee0f-473e-8e21-a5a93e8fa2b2" />
 
 **Answer:**
 `RuntimeBroker.exe`
