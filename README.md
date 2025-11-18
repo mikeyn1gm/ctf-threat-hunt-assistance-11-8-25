@@ -324,7 +324,7 @@ Knowing which sessions are active helps an actor decide whether to act immediate
 What is the unique ID of the initiating process
 
 **Actions and Thought Process:**
-I knew this portion of the investigation was about finding any recon attempts that checked for active user sessions, so I focused on commands like qwinsta, quser, or query user. I filtered DeviceProcessEvents for anything containing those keywords within the same tight time window as the previous findings. Once the results showed up, I just looked for the event that matched the recon behavior and checked the InitiatingProcessUniqueId column. The earliest one tied to the suspicious activity stood out immediately, so I grabbed that value.
+This portion of the investigation was about finding any recon attempts that checked for active user sessions, so I focused on commands like qwinsta, quser, or query user. I filtered DeviceProcessEvents for anything containing those keywords within the same tight time window as the previous findings. Once the results showed up, I just looked for the event that matched the recon behavior and checked the InitiatingProcessUniqueId column. The earliest one tied to the suspicious activity stood out immediately, so I grabbed that value.
 
 **Query used to locate events:**
 
