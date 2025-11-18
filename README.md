@@ -707,61 +707,158 @@ DeviceFileEvents
 
 ## Chronological Event Timeline 
 
-### 1. File Download - TOR Installer
+### 0. Early Persistence – Autorun Value Created
 
-- **Timestamp:** `2025-02-27T06:18:48.8183897Z`
-- **Event:** The user "mikeylab" downloaded a file named `tor-browser-windows-x86_64-portable-14.0.6.exe` to the Downloads folder.
-- **Action:** File download detected.
-- **File Path:** `C:\Users\mikeylab\Downloads\tor-browser-windows-x86_64-portable-14.0.6.exe`
+- **Timestamp:** `2025-10-09T09:01:55.0000000Z`
+- **Event:** A registry autorun value named `RemoteAssistUpdater` is created.
+- **Action:** Registry value creation detected.
+- **Registry Key:** `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run`
+- **Comment:** Establishes early PowerShell-based persistence before all other activity.
 
-### 2. Process Execution - TOR Browser Installation
+### 1. Suspicious Helpdesk File Appears
 
-- **Timestamp:** `2025-02-27T06:22:42.9937103Z`
-- **Event:** The user "mikeylab" executed the file `tor-browser-windows-x86_64-portable-14.0.6.exe` in silent mode, initiating a background installation of the TOR Browser.
-- **Action:** Process creation detected.
-- **Command:** `tor-browser-windows-x86_64-portable-14.0.6.exe /S`
-- **File Path:** `C:\Users\mikeylab\Downloads\tor-browser-windows-x86_64-portable-14.0.6.exe`
-
-### 3. Process Execution - TOR Browser Launch
-
-- **Timestamp:** `2025-02-27T06:23:55.1381116Z`
-- **Event:** User "mikeylab" opened the TOR browser. Subsequent processes associated with TOR browser, such as `firefox.exe` and `tor.exe`, were also created, indicating that the browser launched successfully.
-- **Action:** Process creation of TOR browser-related executables detected.
-- **File Path:** `C:\Users\mikeylab\Desktop\Tor Browser\Browser\firefox.exe`
-
-### 4. Network Connection - TOR Proxy Usage
-
-- **Timestamp:** `2025-02-27T06:24:20.5898172Z`
-- **Event:** The Tor Browser (firefox.exe) established a successful connection to `127.0.0.1` on port `9150` by user “mikeylab”, indicating the activation of the Tor proxy.
-- **Action:** Connection detected.
-- **Remote IP:** 127.0.0.1
-- **Remote Port:** 9150
-
-### 5. Network Connection - Web Traffic Over Tor
-
-- **Timestamp:** `2025-02-27T06:24:20.5898172Z`
-- **Event:** The Tor Browser (tor.exe) established connections to external sites over port `443`, indicating possible internet browsing through the Tor network.
-- **Action:** Connection detected.
-- **Remote IP:** 104.152.111.1
-- **Remote Port:** 443
-
-### 6. File Creation - TOR Shopping List
-
-- **Timestamp:** `2025-02-27T06:41:56.0186683Z`
-- **Event:** The user "mikeylab" created a file named `tor-shopping-list.txt` on the desktop, potentially indicating a list or notes related to their TOR browser activities.
+- **Timestamp:** `2025-10-09T12:05:38.7360000Z`
+- **Event:** File `Helpdesk_247.txt` created in `Downloads`.
 - **Action:** File creation detected.
-- **File Path:** `C:\Users\mikeylab\Desktop\tor-shopping-list.txt`
+- **Comment:** First indicator that `gab-intern-vm` is the suspicious endpoint.
+
+### 2. Execution of Support Tool Script
+
+- **Timestamp:** `2025-10-09T12:22:27.0000000Z`
+- **Event:** Malicious script `SupportTool.ps1` executed.
+- **Action:** PowerShell script execution detected.
+- **Command:** `powershell.exe -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1`
+- **Comment:** Initial malicious execution.
+
+### 3. Fake Defender Tamper Artifact Dropped
+
+- **Timestamp:** `2025-10-09T12:34:59.1260000Z`
+- **Event:** Creation of `DefenderTamperArtifact.lnk`.
+- **Action:** File creation detected.
+- **Comment:** Placed to support a false “Defender tamper” narrative.
+
+### 4. Clipboard Access Attempt
+
+- **Timestamp:** `2025-10-09T12:50:39.9550000Z`
+- **Event:** PowerShell attempts to read the clipboard.
+- **Action:** Process execution detected.
+- **Comment:** A quick probe for sensitive data.
+
+### 5. User Session Enumeration
+
+- **Timestamps:**
+  - `2025-10-09T12:50:58.3170000Z` – `cmd.exe /c quser`
+  - `2025-10-09T12:50:58.3640000Z` – `quser.exe`
+  - `2025-10-09T12:50:59.3440000Z` – `cmd.exe /c qwinsta`
+- **Event:** Interactive session discovery.
+- **Action:** Process execution detected.
+- **Comment:** Used to identify logged-in users.
+
+### 6. Storage Surface Mapping
+
+- **Timestamps:**
+  - `2025-10-09T12:51:17.3660000Z` – `cmd.exe /c net use`
+  - `2025-10-09T12:51:18.3840000Z` – `wmic logicaldisk get name,freespace,size`
+- **Event:** System and share enumeration.
+- **Action:** Recon activity detected.
+- **Comment:** Mapping available storage for collection and staging.
+
+### 7. Connectivity & Name Resolution Check
+
+- **Timestamps:**
+  - `2025-10-09T12:51:32.5900000Z` – `cmd.exe /c nslookup helpdesk-telemetry.remoteassist.invalid`
+  - `2025-10-09T12:51:32.6220000Z` – `nslookup`
+- **Event:** DNS query to attacker-themed domain.
+- **Action:** Network resolution detected.
+- **Comment:** Confirms outbound connectivity.
+
+### 8. Session Refresh Check
+
+- **Timestamp:** `2025-10-09T12:51:44.3420000Z`
+- **Event:** `qwinsta.exe` executed.
+- **Action:** Session enumeration.
+- **Comment:** Actor reconfirms session state.
+
+### 9. Runtime Application Inventory (Tasklist)
+
+- **Timestamps:**
+  - `2025-10-09T12:51:57.6390000Z` – `cmd.exe /c tasklist /v`
+  - `2025-10-09T12:51:57.6860000Z` – `tasklist.exe`
+- **Event:** Process inventory enumeration.
+- **Action:** Recon activity detected.
+- **Comment:** Identifies running applications and security tools.
+
+### 10. Outbound Connectivity Confirmation
+
+- **Timestamp:** `2025-10-09T12:52:10.4880000Z`
+- **Event:** `explorer.exe` initiates outbound web request.
+- **Action:** Network connection detected.
+- **Comment:** Confirms ability to reach the internet.
+
+### 11. Privilege Surface Check
+
+- **Timestamp:** `2025-10-09T12:52:14.3135459Z`
+- **Event:** `cmd.exe /c whoami /groups`
+- **Action:** Privilege enumeration detected.
+- **Comment:** Actor checks available user permissions.
+
+### 12. Additional Network Activity (Normal Browser Traffic)
+
+- **Timestamps:**
+  - `2025-10-09T12:56:44.8370000Z` – Edge outbound
+  - `2025-10-09T12:57:07.8210000Z` – OneNote CDN access
+  - `2025-10-09T12:57:43.8190000Z` – More Edge traffic
+- **Event:** Additional outbound communication.
+- **Action:** Network activity detected.
+- **Comment:** Blends in among normal traffic.
+
+### 13. Bundling / Staging of Recon Artifacts
+
+- **Timestamps:**
+  - `2025-10-09T12:58:17.4360000Z` – `ReconArtifacts.zip` created (Public)
+  - `2025-10-09T12:59:05.6800000Z` – Another ZIP created (Documents)
+  - `2025-10-09T12:59:51.4590000Z` – ZIP moved into Recycle Bin path
+- **Event:** Data consolidation.
+- **Action:** File creation detected.
+- **Comment:** Staging for later exfiltration.
+
+### 14. Outbound Transfer Attempt (Simulated Exfiltration)
+
+- **Timestamps:**
+  - `2025-10-09T13:00:39.3930000Z` – Connection to `example.com`
+  - `2025-10-09T13:00:40.0450000Z` – Connection to `httpbin.org` (IP: `100.29.147.161`)
+- **Event:** Outbound POST-style test connections.
+- **Action:** Egress activity detected.
+- **Comment:** Final exfiltration attempt.
+
+### 15. Scheduled Re-Execution Persistence Added
+
+- **Timestamps:**
+  - `2025-10-09T13:01:28.7700000Z` – Scheduled task created
+  - `2025-10-09T13:01:29.7810000Z` – Scheduled task queried
+- **Event:** Task `SupportToolUpdater` created under ONLOGON trigger.
+- **Action:** Persistent autorun via Task Scheduler created.
+- **Comment:** Ensures malicious script re-runs on logon.
+
+### 16. Planted Narrative Artifact – Support Chat Log
+
+- **Timestamps:**
+  - `2025-10-09T13:02:41.5690000Z` – `SupportChat_log.lnk` created
+  - `2025-10-09T13:03:11.5160000Z` – `SupportChat_log.txt` accessed
+- **Event:** False explanatory “support chat” files created and opened.
+- **Action:** File creation and file access detected.
+- **Comment:** Used to misdirect investigators and justify suspicious activity.
 
 ---
 
 ## Summary
 
-The user "mikeylab" on the "mikey-win10-vla" device initiated and completed the installation of the TOR browser. They proceeded to launch the browser, establish connections within the TOR network, and created various files related to TOR on their desktop, including a file named `tor-shopping-list.txt`. This sequence of activities indicates that the user actively installed, configured, and used the TOR browser, likely for anonymous browsing purposes, with possible documentation in the form of the "shopping list" file.
+The user account on "gab-intern-vm" executed a malicious support-themed script from the Downloads folder and proceeded through a full attack lifecycle including reconnaissance, credential and session discovery, storage enumeration, connectivity tests, artifact staging, outbound transfer attempts, and the establishment of multiple persistence mechanisms. The actor also planted misleading “support” and “Defender tamper” artifacts to mask malicious intent. Overall, the activity reflects deliberate execution, staging, and persistence actions designed to mimic legitimate support operations while enabling continued unauthorized access.
 
 ---
 
 ## Response Taken
 
-TOR usage was confirmed on the endpoint `mikey-win10-vla` by the user `mikeylab`. The device was isolated, and the user's direct manager was notified.
+Malicious PowerShell activity, persistence mechanisms, and simulated exfiltration attempts were confirmed on endpoint `gab-intern-vm`. The device was isolated, user access was restricted, and management was notified for further action.
 
 ---
