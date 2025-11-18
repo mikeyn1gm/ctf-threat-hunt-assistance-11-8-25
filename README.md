@@ -454,20 +454,20 @@ This step demonstrates both access and the potential to move meaningful data off
 Which outbound destination was contacted first?
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+I filtered DeviceNetworkEvents down to outbound traffic on the compromised VM and limited the window to the initial activity period. Since the details stating something about “support,” I expected something like a connectivity probe or Microsoft domain. I sorted everything oldest-to-newest and looked for the very first outbound request that was marked as a remote session initiation. The earliest hit was a PowerShell-initiated connection out to `www.msftconnecttest.com`, which matched the behavior I was expecting.
 
 **Query used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+DeviceNetworkEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
-| project TimeGenerated, FileName, ProcessCommandLine
+| where TimeGenerated between (datetime(2025-10-09T12:50:00Z) .. datetime(2025-10-09T13:00:00Z))  
+| where IsInitiatingProcessRemoteSession == true
+| project TimeGenerated, InitiatingProcessFileName, RemoteUrl, RemoteIP, IsInitiatingProcessRemoteSession
 | order by TimeGenerated asc 
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1456" height="367" alt="image" src="https://github.com/user-attachments/assets/b5abb04e-a579-4bd7-ad8e-f1f51bdfde1e" />
 
 **Answer:**
 `www.msftconnecttest.com`
@@ -496,20 +496,21 @@ Staging is the practical step that simplifies exfiltration and should be correla
 Provide the full folder path value where the artifact was first dropped into
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+The latest details directed me to trying to find where the attacker may have first dropped a staged artifact. I switched over to DeviceFileEvents and filtered specifically for FileCreated actions involving archive formats (any files with .zip, .rar, or .7z as the file extension). Because staging usually happens late in the chain, I kept my time range tight around the period when other recon and collection steps were happening. As soon as I ran the query, I saw `ReconArtifacts.zip` pop up twice, one in the user’s Documents folder and one in `C:\Users\Public`. Having in mind to find the first drop location, I sorted ascending with the results and grabbed the earliest folder path to find `C:\Users\Public\ReconArtifacts.zip`
 
 **Query used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+DeviceFileEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
-| project TimeGenerated, FileName, ProcessCommandLine
+| where TimeGenerated between (datetime(2025-10-09T12:50:00Z) .. datetime(2025-10-09T13:00:00Z))  
+| where ActionType == "FileCreated"
+| where FileName has_any (".zip", ".rar", ".7z")
+| project TimeGenerated, FileName, FolderPath, ActionType
 | order by TimeGenerated asc 
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1461" height="361" alt="image" src="https://github.com/user-attachments/assets/a25e6edb-8bb7-40b4-871d-d49cc3241c9e" />
 
 **Answer:**
 `C:\Users\Public\ReconArtifacts.zip`
@@ -538,20 +539,21 @@ Succeeded or not, attempt is still proof of intent — and it reveals egress pat
 Provide the IP of the last unusual outbound connection
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+I filtered DeviceNetworkEvents to only show outbound events initiated by PowerShell, and excluded anything with empty IP/URL fields. For this part of the investigation, I added more minutes to the time range to make sure I didn't miss anything. After sorting the results by time, I saw three outbound attempts. The most recent one was a PowerShell call to `httpbin.org` with the IP of `100.29.147.161`.
 
 **Query used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+DeviceNetworkEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
-| project TimeGenerated, FileName, ProcessCommandLine
-| order by TimeGenerated asc 
+| where TimeGenerated between (datetime(2025-10-09T12:50:00Z) .. datetime(2025-10-09T13:10:00Z))  
+| where RemoteIP != "" or RemoteUrl != ""
+| where InitiatingProcessFileName == "powershell.exe"
+| project TimeGenerated, InitiatingProcessFileName, RemoteUrl, RemoteIP, InitiatingProcessParentFileName
+| order by TimeGenerated asc
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1477" height="353" alt="image" src="https://github.com/user-attachments/assets/3ec8b676-0893-4036-a293-b1a8bdc9f509" />
 
 **Answer:**
 `100.29.147.161`
