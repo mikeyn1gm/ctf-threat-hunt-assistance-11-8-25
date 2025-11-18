@@ -370,7 +370,7 @@ A process inventory shows what’s present and what to avoid or target for colle
 Provide the file name of the process that best demonstrates a runtime process enumeration event on the target host.
 
 **Actions and Thought Process:**
-I figured the hint was pointing straight at something like tasklist, so I narrowed my search in DeviceProcessEvents to anything with "task" in the command line. I continue to keep the same time window as the previous findings to stay consistent with the attacker’s activity timeline. Once the results popped up, `tasklist.exe` stood out immediately as the clearest example of a full process-enumeration event. It matched the suspected details perfectly and was tied to suspicious parent processes, so that confirmed it was the right one.
+I figured the new details pointed straight at the use of something like tasklist, so I narrowed my search in DeviceProcessEvents to anything with "task" in the command line. I continue to keep the same time window as the previous findings to stay consistent with the attacker’s activity timeline. Once the results popped up, `tasklist.exe` stood out immediately as the clearest example of a full process-enumeration event. It matched the suspected details perfectly and was tied to suspicious parent processes, so that confirmed it was the right one.
 
 **Query used to locate events:**
 
