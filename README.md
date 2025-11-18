@@ -626,18 +626,20 @@ What was the name of the registry value
 **Actions and Thought Process:**
 I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
 
+**Note:** DeviceRegistryEvents was not returning results with my query as intended for this exercise. The image of the results were provided by the CTF admin after escalation. In his results you'll noticed he has "Timestamp" instead of "TimeGenerated". He was using Microsoft Defender for Endpoint when he obtained those results. **You must use "TimeStamp" for MDE and "TimeGenerated" for Log Analytics workspaces.**
+
 **Query used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+DeviceRegistryEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
-| project TimeGenerated, FileName, ProcessCommandLine
+| where TimeGenerated between (datetime(2025-10-09T9:00:00Z) .. datetime(2025-10-09T13:10:00Z))  
+| where RegistryValueName contains "RemoteAssistUpdater"
+| project TimeGenerated, ActionType, RegistryKey, RegistryValueName, RegistryValueData, InitiatingProcessFileName, InitiatingProcessCommandLine, RegistryValueType
 | order by TimeGenerated asc 
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1879" height="240" alt="image" src="https://github.com/user-attachments/assets/c086172f-88af-4d6d-816f-71df6321900d" />
 
 **Answer:**
 `RemoteAssistUpdater`
