@@ -668,20 +668,32 @@ A planted explanation is a classic misdirection. The sequence and context reveal
 Identify the file name of the artifact left behind
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+To track down the planted narrative file, I first looked for any suspicious file modifications in DeviceFileEvents around the time of the other activity. I ran the first query filtering on FileModified to see if anything stood out. In those results, the only interesting file related to the operation was `SupportChat_log.txt`. This text file wasn't what we were looking for but it still piqued my interest. I switched to searching for filename patterns containing "SupportChat" to check for any shortcut or artifact the actor might’ve interacted with directly with similar naming. That’s where the `SupportChat_log.lnk` file popped up among the similar text file results which is what we needed to find since it was the user-facing file the actor left behind on purpose.
 
-**Query used to locate events:**
+**Queries used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+//1st Query
+DeviceFileEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
-| project TimeGenerated, FileName, ProcessCommandLine
+| where TimeGenerated between (datetime(2025-10-09T12:50:00Z) .. datetime(2025-10-09T13:10:00Z)) 
+| where ActionType == "FileModified"
+| project TimeGenerated, FileName, FolderPath, InitiatingProcessFileName, InitiatingProcessCommandLine
+| order by TimeGenerated asc
+
+//2nd Query
+DeviceFileEvents   
+| where DeviceName == "gab-intern-vm"  
+| where TimeGenerated between (datetime(2025-10-09T12:50:00Z) .. datetime(2025-10-09T13:10:00Z))  
+| where FileName contains ("SupportChat")
+| project TimeGenerated, FileName, FolderPath, InitiatingProcessFileName, InitiatingProcessCommandLine
 | order by TimeGenerated asc 
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+(1st Query Results)
+<img width="1467" height="365" alt="image" src="https://github.com/user-attachments/assets/b4221b88-2e35-42e4-884d-6ca0eab2c101" />
+(2nd Query Results)
+<img width="1470" height="376" alt="image" src="https://github.com/user-attachments/assets/4803d6f4-5155-456e-87b9-55fa7cf2c262" />
 
 **Answer:**
 `SupportChat_log.lnk`
