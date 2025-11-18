@@ -578,20 +578,20 @@ Re-execution mechanisms are the actor’s way of surviving beyond a single sessi
 Provide the value of the task name down below
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+To track down the persistence mechanism, I focused on anything involving schtasks, since that’s usually the easiest way an actor ensures their tooling reruns after login. I filtered within the same tight timeframe and looked for task creation or queries by name. Right away, I saw a scheduled task being created with `/Create` and then immediately queried with `/Query`. The task name involved stood out clearly as `SupportToolUpdater`.
 
 **Query used to locate events:**
 
 ```kql
-DeviceProcessEvents  
+DeviceProcessEvents   
 | where DeviceName == "gab-intern-vm"  
-| where TimeGenerated between (datetime(2025-10-01) .. datetime(2025-10-15))  
-| where tolower(ProcessCommandLine) has "\\downloads\\"
-| project TimeGenerated, FileName, ProcessCommandLine
-| order by TimeGenerated asc 
+| where TimeGenerated between (datetime(2025-10-09T12:50:00Z) .. datetime(2025-10-09T13:10:00Z))  
+| where ProcessCommandLine contains "schtasks"
+| project TimeGenerated, ProcessCommandLine
+| order by TimeGenerated asc
 
 ```
-<img width="1155" height="292" alt="image" src="https://github.com/user-attachments/assets/5cbcdd77-8fe0-43d7-8c48-b00b834e59d1" />
+<img width="1467" height="352" alt="image" src="https://github.com/user-attachments/assets/d623fcfa-fe9b-4407-a50b-eadbb7ed406c" />
 
 **Answer:**
 `SupportToolUpdater`
