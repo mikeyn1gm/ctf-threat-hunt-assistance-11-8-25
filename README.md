@@ -624,9 +624,9 @@ DM the CTF admin should you wish to see how it would normally look like
 What was the name of the registry value
 
 **Actions and Thought Process:**
-I searched within DeviceProcessEvents for any suspicious commands that were ran between October 1st to October 15th under the device name of "gab-intern-vm". I sorted the results to find the earliest strange execution that stood out to me. I noticed `"powershell.exe" -ExecutionPolicy Bypass -File C:\Users\g4bri3lintern\Downloads\SupportTool.ps1` which caught my attention.
+With suspicions of registry or startup-area modifications, I went straight to investigating in DeviceRegistryEvents. The details noted the presence of something with **"RemoteAssistUpdater"**, so I filtered for that name directly. The registry value name `RemoteAssistUpdater` was shown in the results along with the PowerShell command that set it, confirming it as the fallback autorun.
 
-**Note:** DeviceRegistryEvents was not returning results with my query as intended for this exercise. The image of the results were provided by the CTF admin after escalation. In his results you'll noticed he has "Timestamp" instead of "TimeGenerated". He was using Microsoft Defender for Endpoint when he obtained those results. **You must use "TimeStamp" for MDE and "TimeGenerated" for Log Analytics workspaces.**
+**Note:** DeviceRegistryEvents was not returning results with my query as intended for this exercise. The image of the results were provided by the CTF admin after escalation. In his results you'll noticed he has "Timestamp" instead of "TimeGenerated" for his first column. He was using Microsoft Defender for Endpoint (MDE) when he obtained those results. **You must use "TimeStamp" for MDE and "TimeGenerated" for Log Analytics workspaces.**
 
 **Query used to locate events:**
 
