@@ -1,5 +1,6 @@
 # Capture The Flag Threat Hunt Report: Assistance (11/8/25)
 <img width="777" height="520" alt="image" src="https://github.com/user-attachments/assets/9d54faaa-0606-4fae-a122-c963ae8f5382" />
+<img width="601" height="368" alt="image" src="https://github.com/user-attachments/assets/c516129e-ea6a-47d6-b8b9-2adec5c254f6" />
 
 ## Platforms and Languages Leveraged
 - Windows 11 Virtual Machines (Microsoft Azure)
